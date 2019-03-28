@@ -22,5 +22,6 @@ public interface BioFormulaMaterialService {
 	public List<BioFormula> getBioFormula(List<BioFormulaMaterial>  bfmList, Integer variableID, Integer dependentVariableID);
 	List<BioMaterial> getBioMaterialByFormulaId(Long selectedFormulaId);
 	public void delete(String materialId, String formulaId);
+	void addBioFormula(Long selectedFormulaId, Long selectedBioMaterialId);
 	
 }

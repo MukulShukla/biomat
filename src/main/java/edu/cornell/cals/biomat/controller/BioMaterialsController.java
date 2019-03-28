@@ -1,11 +1,13 @@
 package edu.cornell.cals.biomat.controller;
 
+import java.net.http.HttpResponse;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -99,15 +101,21 @@ public class BioMaterialsController {
 	}	
 
 	@PostMapping("editFormula")
-	public ModelAndView getFormulaeForEdit(@RequestParam(value="selectedFormulaId", required=true) Long selectedFormulaId) {
+	public ModelAndView getFormulaeForEdit(@RequestParam(value="selectedFormulaId", required=true) Long selectedFormulaId, @RequestParam(value="formulaName", required=true) String formulaName) {
 		logger.info("getFormulaeForEdit :: selectedFormulaId:"+selectedFormulaId);
 		EditBioFormulaForm editBioFormulaForm= new EditBioFormulaForm();
 		editBioFormulaForm.setSelectedFormulaId(selectedFormulaId);
+		editBioFormulaForm.setFormulaName(formulaName);
 		editBioFormulaForm.setBioMaterials(bioFormulaMaterialService.getBioMaterialByFormulaId(selectedFormulaId));
 		ModelAndView  mv = new ModelAndView("materials/editFormula","editBioFormulaForm",editBioFormulaForm);
 		return mv;
 	}	
 
+	@PostMapping("addBioMaterialForm")
+	public void addBioMaterialForm(@RequestParam(value="formulaId", required=true) Long selectedFormulaId, @RequestParam(value="selectedBioMaterialId", required=true) Long selectedBioMaterialId, HttpServletResponse response) {
+		bioFormulaMaterialService.addBioFormula(selectedFormulaId, selectedBioMaterialId);
+		response.setStatus(200); 
+	}
 	
 	@GetMapping("editFormula")
 	public ModelAndView displayEditFormulaPage() {

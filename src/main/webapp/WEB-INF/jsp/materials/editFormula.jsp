@@ -1,4 +1,5 @@
 <!DOCTYPE HTML>
+<%@page import="java.net.http.HttpResponse"%>
 <html lang="en">
 
 <%@ include file = "./../header.jsp" %>
@@ -15,19 +16,20 @@
 	<h2 class="text-info">Edit Bio Formula Name to Search</h2>
 	
 	
-	<form:form  action="editFormula"  method="post"  modelAttribute ="editBioFormulaForm" >
+	<form:form  action="editFormula"  method="post"  modelAttribute ="editBioFormulaForm" onSubmit="populate()" id ="originalForm">
 	
 		<div class="form-group row">
 			<div class="col-sm-9">
 				<form:input class="form-control" id="selectedFormulaId" path="selectedFormulaId"  placeholder="Please enter formula name to edit"/>
 				<form:errors  class="text-danger"  path="selectedFormulaId" />
+				<form:hidden path="formulaName" id="formulaName" />
 			</div>
 			<div class="col-sm-1">
 				<button id="search-material" name="search-material" class="btn btn-info">List Associated Materials</button>
 			</div>
 		</div>
 		
-		<h4 class="text-info">Associated Materials: </h4>
+		<h4 class="text-info">Associated Materials: ${editBioFormulaForm.formulaName}</h4>
 			<table class="table table-hover table-striped">
 			    <thead>
 			      <tr>
@@ -51,12 +53,43 @@
 				</tbody>
 					
 			</table>	
-
+			<c:if test="${editBioFormulaForm.formulaName != null}">
+				<button type="button" class="btn btn-info" id="addMaterial">Add Material</button>
+			</c:if>
 		
-	</form:form>
+	</form:form>	         
 	
 	
-	
+	<!-- Modal -->
+	  <div class="modal fade" id="myModal" role="dialog">
+	    <div class="modal-dialog">
+	    
+	      <!-- Modal content-->
+	      <div class="modal-content">
+	        <div class="modal-header" >
+	          <button type="button" class="close" data-dismiss="modal">&times;</button>
+	          <h4>Add Material</h4>
+	        </div>
+	        <div class="modal-body" style="padding:40px 50px;">
+	          
+	          <form role="form"  action="addMaterialToFormula"  method="post" id = "addMForm">
+	            <div class="form-group">
+	            	<input type="text" id="formulaId" style="visibility: hidden;" name="formulaId" value=""/>
+	              <input class="form-control" id="selectedBioMaterialId" name="selectedBioMaterialId" placeholder="Enter material to search">
+	            
+	              <input type="submit" id="modalSubmit" class="btn btn-success btn-block" value="Add Material"/>
+	             </div>
+	          </form>
+	        
+	        </div>
+	        <div class="modal-footer">
+	          <button type="submit" class="btn btn-danger btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
+	        </div>
+	      </div>
+	      
+	    </div>
+	  </div> 
+
 	
 	<div id="footerbar"> <p>&nbsp;</p> <%@ include file = "./../footer_bar.jsp" %></div>	
 </div>  
@@ -72,10 +105,47 @@
 	    autoOpen: true
 	});
 	
+	$('#selectedBioMaterialId').inputpicker({
+	    url: 'getMaterials',
+	    fields:['id','shortDesc'],
+	    fieldText : 'shortDesc',
+	    fieldValue : 'id',
+	    headShow: true,
+	    filterOpen: true,
+	    autoOpen: true
+	});
+	
+	function populate(){
+		document.getElementById('formulaName').value = document.getElementById('inputpicker-1').value;
+	}
+	
+	
+	$("#modalSubmit").on("click", function(e) {
+	    e.preventDefault();
+	    formulaId = document.getElementById('formulaId').value;
+	    selectedBioMaterialId = document.getElementById('selectedBioMaterialId').value;
+	    document.getElementById('addMForm').reset();
+	    $('#myModal').modal('hide');
+	    //post to addBioMaterialForm
+	    var myKeyVals = { "formulaId" : formulaId, "selectedBioMaterialId" : selectedBioMaterialId}
+
+	    var saveData = $.ajax({
+	          type: 'POST',
+	          url: "/addBioMaterialForm",
+	          data: myKeyVals,
+	          dataType: "text",
+	          success: function(resultData) { alert("Save Complete. Please refresh list") }
+	    });
+	    saveData.error(function() { alert("Something went wrong"); });
+	    document.getElementById('originalForm').submit();
+	});
+	
+	
 	function deleteAssociation(bioMaterialId){
 		var formulaId = document.getElementById('selectedFormulaId').value;
 		var source = event.target || event.srcElement;
 		source.disabled = true;
+		source.innerText= "Deleted"
 		
 		const url = "deleteBioMaterialFormula?formulaId="+formulaId+"&materialId="+bioMaterialId;
 		fetch(url, {
@@ -85,7 +155,16 @@
 		).then(
 		    html => console.log(html)
 		);
+		document.getElementById('originalForm').submit();
 	}
+	
+	$(document).ready(function(){
+		  $("#addMaterial").click(function(){
+		    $("#myModal").modal();
+		    document.getElementById('formulaId').value = document.getElementById('selectedFormulaId').value;
+		    document.getElementById('inputpicker-div-2').style.width = "100%";
+		  });
+		});
 	
 	</script>
 </body>

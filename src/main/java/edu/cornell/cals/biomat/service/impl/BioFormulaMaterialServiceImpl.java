@@ -12,6 +12,7 @@ import javax.persistence.PersistenceUnit;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ch.qos.logback.classic.Logger;
 import edu.cornell.cals.biomat.controller.BioMaterialsController;
@@ -100,5 +101,16 @@ public class BioFormulaMaterialServiceImpl implements BioFormulaMaterialService{
 	@Override
 	public void delete(String materialId, String formulaId) {
 		bioFormulaMaterialRepository.deleteBioFormulaMaterialByMaterialIdAndFormulaId(Long.parseLong(materialId), Long.parseLong(formulaId));
+	}
+
+	@Override
+	@Transactional
+	public void addBioFormula(Long selectedFormulaId, Long selectedBioMaterialId) {
+		
+		BioFormulaMaterial bfm = new BioFormulaMaterial();
+		bfm.setFormulaId(selectedFormulaId);
+		bfm.setMaterialId(selectedBioMaterialId);
+		bioFormulaMaterialRepository.save(bfm);;
+		
 	}	
 }
